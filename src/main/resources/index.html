@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>WebSocket Client</title>
+        <style>
+            #output {
+                border: solid 1px #000;
+            }
+        </style>
+    </head>
+    <body>
+        <p>
+            <form id="form-ws-connect">
+                <input type="text" id="username">
+                <button type="submit">Connect</button>
+            </form>
+        </p>
+        <p>
+        <form id="form-message">
+            <input type="text" id="message">
+            <button type="submit">Send message</button>
+        </form>
+        </p>
+        <p>
+            Output:
+            <div id="output"></div>
+        </p>
+        <script>
+            let s;
+
+            // Connect
+            const $usernameBox = document.getElementById("username");
+            const $formConnect = document.getElementById("form-ws-connect");
+
+            $formConnect.addEventListener("submit", function (e) {
+                e.preventDefault();
+                wsConnect($usernameBox.value);
+            }, false);
+
+            // Send message
+            const $msgBox = document.getElementById("message");
+            const $output = document.getElementById("output");
+            const $formMessage = document.getElementById("form-message");
+
+            const wsConnect = (username) => {
+                try {
+                    var host = `ws://localhost:8025/demo/chat/${username}`;
+                    console.log("Host:", host);
+
+                    s = new WebSocket(host);
+
+                    s.onopen = function (e) {
+                        console.log("Socket opened.");
+                    };
+
+                    s.onclose = function (e) {
+                        console.log("Socket closed.");
+                    };
+
+                    s.onmessage = function (e) {
+                        console.log("Socket message:", e.data);
+                        var p = document.createElement("p");
+                        p.innerHTML = e.data;
+                        $output.appendChild(p);
+                    };
+
+                    s.onerror = function (e) {
+                        console.log("Socket error:", e);
+                    };
+
+                } catch (ex) {
+                    console.log("Socket exception:", ex);
+                }
+            }
+
+            $formMessage.addEventListener("submit", function (e) {
+                e.preventDefault();
+                s.send($msgBox.value);
+                $msgBox.value = "";
+            }, false)
+        </script>
+    </body>
+</html>
